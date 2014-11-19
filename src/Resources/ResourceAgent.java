@@ -53,56 +53,21 @@ public class ResourceAgent extends Agent {
             
             switch(msg.getContent())  // processes INFORM messages received
             {
-	            case "treatments": // Message received: "treatments"
-	            {
-	            	String treatments = "treatments: ";
-	            	for(int i=0; i < this.resourceInfo.getCapabilities().size(); i++)
-	            	{
-	            		treatments += this.resourceInfo.getCapabilities().get(i).getExpertise()+"_,_";
-	            	}
-	            	reply.setContent(treatments);
-	            	this.replyToFlag = true;
-	            	break;
-	            }
-	            case "confirm":
-	            {
-	            	//TODO update the patient(being treated) stats
-	            	break;
-	            }
 	            case "reject":
 	            {
 	            	break;
 	            }
 	            default: 
 	            {
-	            	/*
-	            	if(msg.getContent().substring(0, 9).equals("subscribe"))
+	            	String[] msgContents = msg.getContent().split(":");
+	            	if(msgContents[0].equals("bid"))
 	            	{
-	            		String expertiseWanted= msg.getContent().substring(10);
-		            	String numMinutesExam = "numMinutesExam: ";
-		            	for(int i=0; i < this.resourceInfo.getCapabilities().size(); i++)
-		            	{
-		            		if(this.resourceInfo.getCapabilities().get(i).getExpertise().equals(expertiseWanted))
-		            		{
-		            			numMinutesExam += this.resourceInfo.getCapabilities().get(i).getNumMinutesExam();
-		            		}
-		            	}
-		            	reply.setContent(numMinutesExam);
-	            		System.out.println("expertise subscribed: " + msg.getContent().substring(10));
-	            		this.replyToFlag = true;
-	            		break;
+	            		//TODO guardar bid 
+	            		System.out.println("bid: " + msgContents[1]);
 	            	}
-	            	else */if(msg.getContent().substring(0, 13).equals("availableTime"))
+	            	else if(msgContents[0].equals("startingTime"))
 	            	{
-	            		System.out.println("availbleTime: " + msg.getContent().substring(14));
-	            	}
-	            	else if(msg.getContent().substring(0, 3).equals("bid"))
-	            	{
-	            		System.out.println("bid: " + msg.getContent().substring(4));
-	            	}
-	            	else if(msg.getContent().substring(0, 12).equals("startingTime"))
-	            	{
-	            		System.out.println("patientID: " + msg.getContent().substring(14));
+	            		System.out.println("patientID: " + msgContents[1]);
 	            	}
 	            	break;
 	            }
@@ -119,9 +84,11 @@ public class ResourceAgent extends Agent {
         	 System.out.println(++n + " " + getLocalName() + ": recebi " + msg.getContent());
              // cria resposta
              ACLMessage reply = msg.createReply();
-        	 if(msg.getContent().substring(0, 9).equals("subscribe")) {
-        		 String expertiseWanted= msg.getContent().substring(10);
-            	String numMinutesExam = "numMinutesExam: ";
+             
+             String[] msgContents = msg.getContent().split(":");
+        	 if(msgContents[0].equals("subscribe")) {
+        		String expertiseWanted= msgContents[1];
+            	String numMinutesExam = "numMinutesExam:";
             	for(int i=0; i < this.resourceInfo.getCapabilities().size(); i++)
             	{
             		if(this.resourceInfo.getCapabilities().get(i).getExpertise().equals(expertiseWanted))
@@ -129,8 +96,10 @@ public class ResourceAgent extends Agent {
             			numMinutesExam += this.resourceInfo.getCapabilities().get(i).getNumMinutesExam();
             		}
             	}
+            	//TODO save patient who subscribed
+            	reply.setPerformative( ACLMessage.INFORM );
             	reply.setContent(numMinutesExam);
-	     		System.out.println("expertise subscribed: " + msg.getContent().substring(10));
+	     		System.out.println("expertise subscribed: " + msgContents[1]);
 	     		this.replyToFlag = true;
          	 }
         	// envia mensagem
@@ -145,6 +114,36 @@ public class ResourceAgent extends Agent {
         	 System.out.println(++n + " " + getLocalName() + ": recebi " + msg.getContent());
              // cria resposta
              ACLMessage reply = msg.createReply();
+             
+             if(msg.getContent().equals("treatments"))
+             {
+            	String treatments = "treatments:";
+            	for(int i=0; i < this.resourceInfo.getCapabilities().size(); i++)
+            	{
+            		treatments += this.resourceInfo.getCapabilities().get(i).getExpertise()+";";
+            	}
+            	reply.setPerformative( ACLMessage.INFORM );
+            	reply.setContent(treatments);
+            	this.replyToFlag = true;
+             }
+             
+             // envia mensagem
+             if(this.replyToFlag)
+             {
+ 	            System.out.println(reply);
+ 	            send(reply);
+ 	            this.replyToFlag = false;
+             }
+         }
+         else if(msg.getPerformative() == ACLMessage.CONFIRM) {
+        	 System.out.println(++n + " " + getLocalName() + ": recebi " + msg.getContent());
+             // cria resposta
+             ACLMessage reply = msg.createReply();
+             
+             if(msg.getContent().equals("confirm"))
+             {
+            	//TODO update the patient(being treated) stats
+             }
              
              // envia mensagem
              if(this.replyToFlag)
@@ -162,6 +161,8 @@ public class ResourceAgent extends Agent {
       }
 
    }
+   
+   //TODO Esperar um tempo e depois escolher quem ganha o leilao
 
    // método setup
    protected void setup() {

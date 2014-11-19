@@ -2,9 +2,9 @@ package Patients;
 
 public class PatientBid {
 	private int patientID;
-	private float bid;
+	private double bid;
 	
-	public PatientBid(int patientID, float bid)
+	public PatientBid(int patientID, double bid)
 	{
 		this.patientID = patientID;
 		this.bid = bid;
@@ -18,11 +18,11 @@ public class PatientBid {
 		this.patientID = patientID;
 	}
 
-	public float getBid() {
+	public double getBid() {
 		return bid;
 	}
 
-	public void setBid(float bid) {
+	public void setBid(double bid) {
 		this.bid = bid;
 	}
 	

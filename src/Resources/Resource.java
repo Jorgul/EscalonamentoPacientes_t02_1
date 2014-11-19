@@ -12,9 +12,9 @@ public class Resource {
 	//private ArrayList<Timeblock> timeblocks = new ArrayList<Timeblock>();
 	/* classe Timeblock
 	 private int patientID
-	 private float examMinutes
+	 private double examMinutes
 	 private string expertise
-	 private float startTime, endTime;
+	 private double startTime, endTime;
 	 * */
 
 	public int pickWinner(ArrayList<PatientBid> patientBids) // returns the ID of the patient with the biggest bid

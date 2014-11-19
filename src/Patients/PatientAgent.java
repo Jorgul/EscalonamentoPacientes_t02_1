@@ -44,6 +44,7 @@ public class PatientAgent extends Agent {
             
 	            case "startAuction":
 	        	{
+	        		reply.setPerformative( ACLMessage.INFORM );
 	        		reply.setContent("startingTime:" + this.patientInfo.getPatientID() );
 	        		this.replyToFlag = true;
 	            	break;
@@ -51,6 +52,7 @@ public class PatientAgent extends Agent {
 	        	
 	            case "bidCall":
 	        	{
+	        		reply.setPerformative( ACLMessage.INFORM );
 	        		reply.setContent("bid:" + this.patientInfo.getBid() + ":" + this.patientInfo.getPatientID());
 	        		this.replyToFlag = true;
 	            	break;
@@ -58,28 +60,30 @@ public class PatientAgent extends Agent {
             
             	case "winner":
             	{
+            		reply.setPerformative( ACLMessage.INFORM );
             		//if() quer confirmar
             			reply.setContent("confirm");
             			this.replyToFlag = true;
-            		//else if() quer rejeitar
-            			//reply.setContent("reject");
+            		/*else if() quer rejeitar
+            			reply.setContent("reject");*/
 	            	break;
             	}
 	            
 	            default: 
 	            {
-	            	
-	            	if(msg.getContent().substring(0, 12).equals("treatments: "))
+	            	String[] msgContents = msg.getContent().split(":");
+	            	if(msgContents[0].equals("treatments"))
 	            	{
 	            		String[] expertises;
-	            		System.out.println("treatments: " + msg.getContent().substring(12));
-	            		if (msg.getContent().substring(12).contains("_,_")) {
-	            			expertises=msg.getContent().substring(12).split("_,_");
+	            		System.out.println("treatments: " + msgContents[1]);
+	            		if (msgContents[1].contains(";")) {
+	            			expertises=msgContents[1].split(";");
 	            			for(int i=0; i < expertises.length; i++)
 	            			{
 	            				if(expertises[i].equals(this.patientInfo.getPathology()))
 	            				{
-		            				reply.setContent("subscribe " + this.patientInfo.getPathology());
+	            					reply.setPerformative( ACLMessage.SUBSCRIBE );
+		            				reply.setContent("subscribe:" + this.patientInfo.getPathology());
 		            				this.replyToFlag = true;
 		        	            	break;
 	            				}
@@ -88,13 +92,13 @@ public class PatientAgent extends Agent {
 	            		    throw new IllegalArgumentException("Resource has no expertises");
 	            		}
 	            	}
-	            	else if(msg.getContent().substring(0, 16).equals("numMinutesExam: "))
+	            	else if(msgContents[0].equals("numMinutesExam"))
 	            	{
 	            		
 	            	}
-	            	/*else if(msg.getContent().substring(0, 3).equals("bid"))
+	            	/*else if(msgContents[0].equals("bid"))
 	            	{
-	            		System.out.println("bid: " + msg.getContent().substring(4));
+	            		System.out.println("bid: " + msgContents[1]);
 	            	}*/
 	            	break;
 	            }
@@ -106,6 +110,29 @@ public class PatientAgent extends Agent {
 	            send(reply);
 	            this.replyToFlag = false;
             }
+         }
+         else if(msg.getPerformative() == ACLMessage.REQUEST) {
+        	 System.out.println(++n + " " + getLocalName() + ": recebi " + msg.getContent());
+             // cria resposta
+             ACLMessage reply = msg.createReply();
+             
+             if(msg.getContent().equals("bidCall"))
+             {
+            	String bid = "bid: ";
+            	//TODO função que calcula a aposta do paciente
+            	bid += this.patientInfo.calculateBid();
+            	reply.setPerformative( ACLMessage.INFORM );
+            	reply.setContent(bid);
+            	this.replyToFlag = true;
+             }
+             
+             // envia mensagem
+             if(this.replyToFlag)
+             {
+ 	            System.out.println(reply);
+ 	            send(reply);
+ 	            this.replyToFlag = false;
+             }
          }
       }
 

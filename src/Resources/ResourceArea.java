@@ -3,6 +3,7 @@ package Resources;
 public class ResourceArea {
 	private String expertise;
 	private int numMinutesExam;
+	//private double healthStateVariance;
 	
 	ResourceArea(String expertise, int numMinutesExam)
 	{
